@@ -2,8 +2,15 @@ import xml.etree.ElementTree as ET
 
 
 class MusicXMLConverter:
-    def __init(self):
-        pass
+    def __init__(self):
+        self._mode = "debug"
+        if (self._mode not in ["debug", "production"]):
+            raise ValueError('invalid mode set. Should be "debug" for a more verbose output for debugging OR "production".')
+
+
+    def debugPrint(self, msg):
+        if (self._mode == "debug"):
+            print(msg)
 
     def measureIsEmpty(self, inMeasureElem):
         """ Check if a measure is empty. A measure is empty if all the notes in it are of type "rest" """
@@ -111,7 +118,7 @@ class MusicXMLConverter:
                     # append barline ending to the outBarline
                     outBarline.append(outBarlineRepeat)
                 else:
-                    print("repeat elem not found inside barline")
+                    self.debugPrint("repeat elem not found inside barline")
 
                 # finally add the barlines to the list
                 lstOutBarlines.append(outBarline)
@@ -145,15 +152,13 @@ class MusicXMLConverter:
             inMeasureAttributes = inMeasureElem.find("attributes")
 
             if (inMeasureAttributes is None):
-                print("Fatal Error extracting attributes. Exiting")
-                exit()
+                raise RuntimeError("Fatal Error extracting attributes. Exiting")
             else:
                 inMeasureDivisions = inMeasureAttributes.find("divisions")
 
             # process divisions
             if (inMeasureDivisions is None):
-                print("Fatal Error extracting divisions. Exiting")
-                exit()
+                raise RuntimeError("Fatal Error extracting divisions. Exiting")
             else:
                 outMeasureDivisions.text = inMeasureDivisions.text
 
@@ -165,16 +170,15 @@ class MusicXMLConverter:
                     outMeasureFifths.text = inMeasureFifths.text
                     outMeasureKey.append(outMeasureFifths)
                 else:
-                    print("Fatal Error: fifths not found in measure. Exiting")
-                    exit()
+                    raise RuntimeError("Fatal Error: fifths not found in measure. Exiting")
             else:
-                print("Fatal Error: input measure key not found. Exiting")
+                raise RuntimeError ("Fatal Error: input measure key not found. Exiting")
                 exit()
 
             # process time
             inMeasureTime = inMeasureAttributes.find("time")
             if (inMeasureTime is None):
-                print("Fatal Error: time not found in measure. Exiting")
+                raise RuntimeError("Fatal Error: time not found in measure. Exiting")
                 exit()
 
             inMeasureBeats = inMeasureTime.find("beats")
@@ -182,14 +186,14 @@ class MusicXMLConverter:
             if (inMeasureBeats is not None):
                 outMeasureBeats.text = inMeasureBeats.text
             else:
-                print("Fatal Error: beats not found in measure. Exiting")
+                raise RuntimeError("Fatal Error: beats not found in measure. Exiting")
                 exit()
 
             inMeasureBeatType = inMeasureTime.find("beat-type")
             if (inMeasureBeatType is not None):
                 outMeasureBeatType.text = inMeasureBeatType.text
             else:
-                print("Fatal Error: beats not found in measure. Exiting")
+                raise RuntimeError("Fatal Error: beats not found in measure. Exiting")
                 exit()
 
             outMeasureTime.append(outMeasureBeats)
@@ -211,20 +215,20 @@ class MusicXMLConverter:
                 for measureNote in measureNotes:
                     outMeasure.append(measureNote)
             else:
-                print("Fatal Error: No notes in measure")
-                exit()
+                raise RuntimeError("Fatal Error: No notes in measure")
             # add any repeats
             outBarlines = self.processRepeatsInMeasure(inMeasureElem)
             if (len(outBarlines) > 0):
                 for outBarline in outBarlines:
                     outMeasure.append(outBarline)
             else:
-                print("No repeat barlines found")
+                self.debugPrint("No repeat barlines found")
 
             return outMeasure
         else:
-            print("Error while processing first measure got an unexpected measure number ", inMeasureNo, ". Expected  ",
-                  "1")
+            self.debugPrint("Error while processing first measure got an unexpected measure number ", inMeasureNo,
+                            ". Expected  ",
+                            "1")
             exit()
 
     def convertXML(self, musescoreXMLfilePath):
@@ -267,21 +271,20 @@ class MusicXMLConverter:
         if (len(inMeasures) > 0):
 
             for i in range(0, len(inMeasures)):
-                print("Processing measure", inMeasures[i].get("number"))
+                self.debugPrint("Processing measure" + inMeasures[i].get("number"))
 
                 # First measure
                 # Do this irrespective of whether measure is empty or not
                 if (0 == i):
 
                     if (self.measureIsEmpty(inMeasures[i])):
-                        print("Fatal Error: The first measure cannot be empty in your piece")
-                        exit()
+                        raise RuntimeError("Fatal Error: The first measure cannot be empty in your piece")
 
                     outPart.append(self.processFirstMeasure(inMeasures[i]))
                 else:
                     if (self.measureIsEmpty(inMeasures[i])):
                         # skip processing this measure
-                        print("skipping measure")
+                        self.debugPrint("skipping measure")
                         continue
 
                     # otherwise begin processing the measure
@@ -289,7 +292,7 @@ class MusicXMLConverter:
                     computedMeasureNo = int(inMeasures[i].get("number")) - emptyMeasureCount
 
                     if (emptyMeasureCount > 0):
-                        print("setting measure number ", i, " to ", str(computedMeasureNo))
+                        self.debugPrint("setting measure number "+ i + " to ", str(computedMeasureNo))
 
                     outMeasure = ET.Element("measure")
                     outMeasure.set("number", str(computedMeasureNo))
@@ -300,27 +303,27 @@ class MusicXMLConverter:
                         for measureNote in measureNotes:
                             outMeasure.append(measureNote)
                     else:
-                        print("Fatal Error: No notes in measure")
-                        exit()
+                        raise RuntimeError("Fatal Error: No notes in measure")
+
                     # add any repeats
                     outBarlines = self.processRepeatsInMeasure(inMeasures[i])
                     if (len(outBarlines) > 0):
                         for outBarline in outBarlines:
                             outMeasure.append(outBarline)
                     else:
-                        print("No repeat barlines found")
+                        self.debugPrint("No repeat barlines found")
 
                     # append this measure as subelement of "part"
                     outPart.append(outMeasure)
 
         return ET.tostring(outTreeRoot)
         # for child in inputTreeRoot:
-        #     print(child.tag, child.attrib)
+        #     self.debugPrint(child.tag, child.attrib)
 
 
 # test it
 converter = MusicXMLConverter()
 voltaTestFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_volta_test.xml"
 emptyScoreFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_Empty_bars_test_more_variety.xml"
-convXML = converter.convertXML(voltaTestFile)
+convXML = converter.convertXML(emptyScoreFile)
 print(convXML)
