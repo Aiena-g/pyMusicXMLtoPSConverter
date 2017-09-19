@@ -6,7 +6,7 @@ class MusicXMLConverter:
         pass
 
     def measureIsEmpty(self, inMeasureElem):
-        """Check if a measure is empty. A measure is empty if all the notes in it are rest"""
+        """ Check if a measure is empty. A measure is empty if all the notes in it are of type "rest" """
         inMeasureNotes = inMeasureElem.findall("note")
         if (len(inMeasureNotes) > 0):
             restCount = 0;  # initialise rest count
@@ -21,14 +21,57 @@ class MusicXMLConverter:
                 return False
 
     def processNotes(self, inMeasureElem):
-        "Process notes in a element"
-        pass
+        """ Process notes in a element. Returns a list with all the notes in the measure converted as per PS format """
+        inNotes = inMeasureElem.findall("note")
+        # list to hold array of processed note elements
+        lstOutNotes = []
+
+        for inNote in inNotes:
+            for childNode in inNote:
+                outNote = ET.Element("note")
+
+                # rest
+                inRest = inNote.find("rest")
+                if (inRest is not None):
+                    outRest = ET.Element("rest")
+                    outNote.append(outRest)
+
+                # chord
+                inChord = inNote.find("chord")
+                if (inChord is not None):
+                    outChord = ET.Element("chord")
+                    outNote.append(outChord)
+
+                # duration
+                inDuration = inNote.find("duration")
+                if (inDuration is not None):
+                    outDuration = ET.Element("duration")
+                    outDuration.text = inDuration.text
+                    outNote.append(outDuration)
+
+                # pitch
+                inPitch = inNote.find("pitch")
+                if (inPitch is not None):
+                    outPitch = ET.Element("pitch")
+                    for childNode in inPitch:
+                        if (childNode.tag in ["step", "octave", "alter"]):
+                            pitchSubElem = ET.Element(childNode.tag)
+                            pitchSubElem.text = childNode.text
+                            outPitch.append(pitchSubElem)
+
+                    outNote.append(outPitch)
+
+                # append the mote to the list of notes
+                lstOutNotes.append(outNote)
+
+        # finally return the list of notes
+        return lstOutNotes
 
     def processRepeatsInMeasure(self, inMeasureElem):
-        """Handle repeats. Like barlines, voltas etc. Returns a list of "barline" XML elements"""
+        """ Handle repeats. Like barlines, voltas etc. Returns a list of "barline" XML elements """
         inBarlines = inMeasureElem.findall("barline")
         # list to hold array of barlines for the repeats
-        outBarlines = []
+        lstOutBarlines = []
 
         if (len(inBarlines) > 0):
             for inBarline in inBarlines:
@@ -47,7 +90,7 @@ class MusicXMLConverter:
                     for inBarlineEndingAttrib in inBarlineEndingAttribs:
                         outBarlineEnding.set(inBarlineEndingAttrib, inBarlineEndingAttribs[inBarlineEndingAttrib])
 
-                    #append barline ending to the outBarline
+                        # append barline ending to the outBarline
                         outBarline.append(outBarlineEnding)
 
                 inBarlineRepeat = inBarline.find("repeat")
@@ -58,28 +101,25 @@ class MusicXMLConverter:
                     for inBarlineRepeatAttrib in inBarlineRepeatAttribs:
                         outBarlineRepeat.set(inBarlineRepeatAttrib, inBarlineRepeatAttribs[inBarlineRepeatAttrib])
 
-                    #Special PS case -- PS needs the times attrib irrespective even for 1 repeat time
+                    # Special PS case -- PS needs the times attrib irrespective even for 1 repeat time
                     if ("backward" == inBarlineRepeat.get("direction")):
                         if ("times" in inBarlineRepeatAttribs):
-                            outBarlineRepeat.set("times",inBarlineAttribs["times"])
+                            outBarlineRepeat.set("times", inBarlineAttribs["times"])
                         else:
                             outBarlineRepeat.set("times", "1")
 
-                    #append barline ending to the outBarline
+                    # append barline ending to the outBarline
                     outBarline.append(outBarlineRepeat)
                 else:
                     print("repeat elem not found inside barline")
 
                 # finally add the barlines to the list
-                outBarlines.append(outBarline)
+                lstOutBarlines.append(outBarline)
 
-        return outBarlines
+        return lstOutBarlines
 
     def processFirstMeasure(self, inMeasureElem):
-        """Does special handling for the first measure as it includes important information like time signature etc."""
-        if (self.measureIsEmpty(inMeasureElem)):
-            print("Fatal Error: The first measure cannot be empty in your piece")
-            exit()
+        """ Does special handling for the first measure as it includes important information like time signature etc."""
 
         outMeasure = ET.Element("measure")
         inMeasureNo = int(inMeasureElem.get("number"))
@@ -162,23 +202,30 @@ class MusicXMLConverter:
             outMeasureAttributes.append(outMeasureKey)
             # time
             outMeasureAttributes.append(outMeasureTime)
+            # add it all to the first measure
+            outMeasure.append(outMeasureAttributes)
+
+            # add the notes of the measure
+            measureNotes = self.processNotes(inMeasureElem)
+            if (len(measureNotes) > 0):
+                for measureNote in measureNotes:
+                    outMeasure.append(measureNote)
+            else:
+                print("Fatal Error: No notes in measure")
+                exit()
             # add any repeats
             outBarlines = self.processRepeatsInMeasure(inMeasureElem)
             if (len(outBarlines) > 0):
                 for outBarline in outBarlines:
                     outMeasure.append(outBarline)
             else:
-                print("No barlines found")
-            # add it all to the first measure
-            outMeasure.append(outMeasureAttributes)
+                print("No repeat barlines found")
 
             return outMeasure
         else:
             print("Error while processing first measure got an unexpected measure number ", inMeasureNo, ". Expected  ",
                   "1")
             exit()
-
-        pass  # TODO: Do the basics clefs etc here
 
     def convertXML(self, musescoreXMLfilePath):
 
@@ -225,16 +272,17 @@ class MusicXMLConverter:
                 # First measure
                 # Do this irrespective of whether measure is empty or not
                 if (0 == i):
-                    outPart.append(self.processFirstMeasure(inMeasures[i]))
-                    ''' important process it only with the func above function and
-                        skip the other below code '''
-                    continue
 
-                if (self.measureIsEmpty(inMeasures[i])):
-                    # skip processing this measure
-                    print("skipping measure")
-                    continue
+                    if (self.measureIsEmpty(inMeasures[i])):
+                        print("Fatal Error: The first measure cannot be empty in your piece")
+                        exit()
+
+                    outPart.append(self.processFirstMeasure(inMeasures[i]))
                 else:
+                    if (self.measureIsEmpty(inMeasures[i])):
+                        # skip processing this measure
+                        print("skipping measure")
+                        continue
 
                     # otherwise begin processing the measure
 
@@ -245,6 +293,22 @@ class MusicXMLConverter:
 
                     outMeasure = ET.Element("measure")
                     outMeasure.set("number", str(computedMeasureNo))
+
+                    # add the notes of the measure
+                    measureNotes = self.processNotes(inMeasures[i])
+                    if (len(measureNotes) > 0):
+                        for measureNote in measureNotes:
+                            outMeasure.append(measureNote)
+                    else:
+                        print("Fatal Error: No notes in measure")
+                        exit()
+                    # add any repeats
+                    outBarlines = self.processRepeatsInMeasure(inMeasures[i])
+                    if (len(outBarlines) > 0):
+                        for outBarline in outBarlines:
+                            outMeasure.append(outBarline)
+                    else:
+                        print("No repeat barlines found")
 
                     # append this measure as subelement of "part"
                     outPart.append(outMeasure)
