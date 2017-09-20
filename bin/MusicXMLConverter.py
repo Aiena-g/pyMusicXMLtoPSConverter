@@ -4,6 +4,9 @@ import xml.etree.ElementTree as ET
 class MusicXMLConverter:
     def __init__(self, mode="debug"):
         self._mode = mode
+        #define some global properties used in other places for MusicXML
+        self._multiplier = None # gets a value when processing the first measure
+
         if (self._mode not in ["debug", "production"]):
             raise ValueError(
                 'invalid mode set. Should be "debug" for a more verbose output for debugging OR "production".')
@@ -65,7 +68,8 @@ class MusicXMLConverter:
                 inDuration = inNote.find("duration")
                 if (inDuration is not None):
                     outDuration = ET.Element("duration")
-                    outDuration.text = inDuration.text
+                    outDurationVal = int(inDuration.text) * self._multiplier
+                    outDuration.text = str(int(outDurationVal))
                     outNote.append(outDuration)
 
             # append the mote to the list of notes
@@ -164,7 +168,11 @@ class MusicXMLConverter:
             if (inMeasureDivisions is None):
                 raise RuntimeError("Fatal Error extracting divisions. Exiting")
             else:
-                outMeasureDivisions.text = inMeasureDivisions.text
+                # Hardcode 4 here - A peculiarity of the reference implementation I dont understand this part
+                outMeasureDivisions.text = str(4)
+                # compute Multiplier here (Multiplier used to multiply MusicXML note duration
+                #   i.e. "output note duration" = "input note duration" * "multiplier"
+                self._multiplier = 4/int(inMeasureDivisions.text)
 
             # process key -- fifths
             inMeasureKey = inMeasureAttributes.find("key")
