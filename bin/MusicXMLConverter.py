@@ -110,8 +110,8 @@ class MusicXMLConverter:
 
                     # Special PS case -- PS needs the times attrib irrespective even for 1 repeat time
                     if ("backward" == inBarlineRepeat.get("direction")):
-                        if ("times" in inBarlineRepeatAttribs):
-                            outBarlineRepeat.set("times", inBarlineAttribs["times"])
+                        if (True == ("times" in inBarlineRepeatAttribs)):
+                            outBarlineRepeat.set("times", inBarlineRepeatAttribs["times"])
                         else:
                             outBarlineRepeat.set("times", "1")
 
@@ -266,7 +266,7 @@ class MusicXMLConverter:
         outScorePart.set("id", "P1")
 
         outPartName = ET.Element("part-name")
-        outPartName.text = "converted-stuff"
+        outPartName.text = "converted stuff"
 
         # add it as subelement of score-part
         outScorePart.append(outPartName)
@@ -340,9 +340,11 @@ class MusicXMLConverter:
         #     self.debugPrint(child.tag, child.attrib)
 
 
-# test it
-converter = MusicXMLConverter()
-voltaTestFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_volta_test.xml"
-emptyScoreFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_Empty_bars_test_more_variety.xml"
-convXML = converter.convertXML(voltaTestFile)
-print(convXML)
+if __name__ == '__main__':
+    # test it
+    converter = MusicXMLConverter()
+    voltaTestFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_volta_test.xml"
+    voltaWithTimesTestFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_repeat_test_3r.xml"
+    emptyScoreFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_Empty_bars_test_more_variety.xml"
+    convXML = converter.convertXML(voltaWithTimesTestFile)
+    print(convXML)
