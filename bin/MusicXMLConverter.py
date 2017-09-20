@@ -57,10 +57,24 @@ class MusicXMLConverter:
                 if (inPitch is not None):
                     outPitch = ET.Element("pitch")
                     for childNode in inPitch:
-                        if (childNode.tag in ["step", "octave", "alter"]):
+                        if (True == (childNode.tag in ["step", "octave"])):
                             pitchSubElem = ET.Element(childNode.tag)
                             pitchSubElem.text = childNode.text
                             outPitch.append(pitchSubElem)
+                    # handle the "alter" child tag separately even if the alter value is 0 include it otherwise
+                    #   include the original scores alter value
+                    inPitchAlter = inPitch.find("alter")
+                    if(inPitchAlter is not None):
+                        #use sources alter elem
+                        outPitchAlter = ET.Element("alter")
+                        outPitchAlter.text = inPitchAlter.text
+                        outPitch.append(outPitchAlter)
+                    else:
+                        # make a zero value alter element
+                        outPitchAlter = ET.Element("alter")
+                        outPitchAlter.text = "0"
+                        outPitch.append(outPitchAlter)
+
 
                     outNote.append(outPitch)
 
@@ -354,5 +368,5 @@ if __name__ == '__main__':
     voltaTestFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_volta_test.xml"
     voltaWithTimesTestFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_repeat_test_3r.xml"
     emptyScoreFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_Empty_bars_test_more_variety.xml"
-    convXML = converter.convertXML(voltaWithTimesTestFile)
+    convXML = converter.convertXML(voltaTestFile)
     print(convXML)
