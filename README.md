@@ -10,7 +10,7 @@ A pure python 3 converter to convert score rxported as Music XML from Musescire 
     1) python3
     2) python3-tk
 
-** RUNNUNG**
+**RUNNING**
 1) Make sure you have the above dependencies
 2) Open up "bin/ConverterUI.py" and update folder paths in these two variables
  "self.MusecoreScoresFolder" AND "self.PlaneShiftScoresFolder" (HINT: search for these in the python file read the comment above and you will know exactly what to do)
