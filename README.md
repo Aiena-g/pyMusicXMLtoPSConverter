@@ -1,12 +1,12 @@
 # pyMusicXMLtoPSConverter
 
 **DESCRIPTION**
-A pure python 3 converter to convert score rxported as Music XML from Musescire in Planeshift compatible ones
+A pure python 3 converter to convert scores exported as Music XML from Musescore into PlaneShift compatible ones
 
 **INSTALLATION**
 1) Make sure you have the following installed:
-    The application need python 3 and ppython3 tk integration support for showing the GUI.
-    Son on Ubuntu for example you would install the below 2 packages
+    The application need python 3 and python3 tk (tkinter) integration support for showing the GUI.
+    So on Ubuntu for example you would install the below 2 packages
     1) python3
     2) python3-tk
 
