@@ -38,7 +38,7 @@ class ConverterConfigHandler:
         self.writeFile()
 
     def readPlaneShiftScoresDefaultFldr(self):
-        return self._confparser.get("PATHS", "musescore_def_folder")
+        return self._confparser.get("PATHS", "planeshift_score_def_folder")
 
     def writePlaneShiftScoresDefaultFldr(self, folderPath):
         self._confparser.set("PATHS", "planeshift_score_def_folder", folderPath)
