@@ -14,7 +14,9 @@ except ImportError:
     from tkinter import *
     from tkinter import filedialog as tkfd
     import tkinter.scrolledtext as tkst
+
     import subprocess
+    import os
 
 try:
     import ttk
@@ -64,7 +66,13 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         if (converter is None):
             raise Exception("Please specifiy a converter")
         else:
-            self.converter = converter
+            self._converter = converter
+
+        #define the configfile path
+        scriptPath = os.path.dirname(os.path.abspath(__file__))
+        #TODO: Make the confighandler class and pass the config file path obtained here there
+        self._confFilePath = os.path.join(os.path.dirname(os.path.normpath(scriptPath)),"conf","conf.ini")
+        print (self._confFilePath) # TODO: remove this print -- debug only path seems to work ok
         # DEFINE SOME USEFUL VARIABLES FOR THE APPLICATION
         '''
         NOTE:
@@ -83,79 +91,141 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         _ana1color = '#d9d9d9'  # X11 color: 'gray85'
         _ana2color = '#d9d9d9'  # X11 color: 'gray85'
 
-        top.geometry("577x560+830+230")
+        top.geometry("577x681+648+0")
         top.title("Musescore -> Planeshift -- Music XML Converter")
 
-        self.entSrcFile = Entry(top)
-        self.entSrcFile.place(relx=0.03, rely=0.14, relheight=0.12
-                              , relwidth=0.67)
-        self.entSrcFile.configure(background="white")
-        self.entSrcFile.configure(font="TkFixedFont")
-        self.entSrcFile.configure(width=386)
+        font11 = "-family Arial -size 10 -weight bold -slant roman " \
+                 "-underline 0 -overstrike 0"
+        font9 = "-family Arial -size -12 -weight normal -slant roman " \
+                "-underline 0 -overstrike 0"
 
-        self.entDestFile = Entry(top)
-        self.entDestFile.place(relx=0.03, rely=0.39, relheight=0.12
+        # configure section controls
+        self.lblTitlConfigure = Label(top)
+        self.lblTitlConfigure.place(relx=0.03, rely=0.0, height=28, width=225)
+        self.lblTitlConfigure.configure(activebackground="#f9f9f9")
+        self.lblTitlConfigure.configure(anchor=W)
+        self.lblTitlConfigure.configure(font=font11)
+        self.lblTitlConfigure.configure(text='''Configure:''')
+
+        self.MCXMLSrcFldr = Entry(top)
+        self.MCXMLSrcFldr.place(relx=0.03, rely=0.09, relheight=0.06
+                                , relwidth=0.67)
+        self.MCXMLSrcFldr.configure(background="white")
+        self.MCXMLSrcFldr.configure(font="TkFixedFont")
+        self.MCXMLSrcFldr.configure(selectbackground="#c4c4c4")
+        READONLY = 'readonly'
+        self.MCXMLSrcFldr.configure(state=READONLY)
+
+        self.lblPSSheetDestFldr = Label(top)
+        self.lblPSSheetDestFldr.place(relx=0.03, rely=0.15, height=28, width=205)
+        self.lblPSSheetDestFldr.configure(activebackground="#f9f9f9")
+        self.lblPSSheetDestFldr.configure(anchor=W)
+        self.lblPSSheetDestFldr.configure(text='''Planeshift scores destination folder''')
+
+        self.PSSheetDestFldr = Entry(top)
+        self.PSSheetDestFldr.place(relx=0.03, rely=0.2, relheight=0.06
+                                   , relwidth=0.67)
+        self.PSSheetDestFldr.configure(background="white")
+        self.PSSheetDestFldr.configure(font="TkFixedFont")
+        self.PSSheetDestFldr.configure(selectbackground="#c4c4c4")
+        READONLY = 'readonly'
+        self.PSSheetDestFldr.configure(state=READONLY)
+
+        self.lblMCXMLSrcFldr = Label(top)
+        self.lblMCXMLSrcFldr.place(relx=0.03, rely=0.04, height=28, width=225)
+        self.lblMCXMLSrcFldr.configure(activebackground="#f9f9f9")
+        self.lblMCXMLSrcFldr.configure(anchor=W)
+        self.lblMCXMLSrcFldr.configure(text='''Musescore MusicXML export directory''')
+        self.lblMCXMLSrcFldr.configure(width=225)
+
+        self.btnPSDestFldr = Button(top)
+        self.btnPSDestFldr.place(relx=0.73, rely=0.2, height=36, width=133)
+        self.btnPSDestFldr.configure(activebackground="#d9d9d9")
+        self.btnPSDestFldr.configure(text='''Browse''')
+
+        self.btnMCSrcFldr = Button(top)
+        self.btnMCSrcFldr.place(relx=0.73, rely=0.09, height=36, width=133)
+        self.btnMCSrcFldr.configure(activebackground="#d9d9d9")
+        self.btnMCSrcFldr.configure(text='''Browse''')
+
+        # converter section controls
+        self.lblTitlConverter = Label(top)
+        self.lblTitlConverter.place(relx=0.03, rely=0.26, height=28, width=225)
+        self.lblTitlConverter.configure(activebackground="#f9f9f9")
+        self.lblTitlConverter.configure(anchor=W)
+        self.lblTitlConverter.configure(font=font11)
+        self.lblTitlConverter.configure(text='''Converter:''')
+
+        self.endSrcFile = Entry(top)
+        self.endSrcFile.place(relx=0.03, rely=0.35, relheight=0.06
+                              , relwidth=0.67)
+        self.endSrcFile.configure(background="white")
+        self.endSrcFile.configure(font="TkFixedFont")
+        self.endSrcFile.configure(width=386)
+
+        self.endDestFile = Entry(top)
+        self.endDestFile.place(relx=0.03, rely=0.47, relheight=0.06
                                , relwidth=0.67)
-        self.entDestFile.configure(background="white")
-        self.entDestFile.configure(font="TkFixedFont")
-        self.entDestFile.configure(selectbackground="#c4c4c4")
+        self.endDestFile.configure(background="white")
+        self.endDestFile.configure(font="TkFixedFont")
+        self.endDestFile.configure(selectbackground="#c4c4c4")
 
         self.Label1 = Label(top)
-        self.Label1.place(relx=0.03, rely=0.31, height=28, width=205)
+        self.Label1.place(relx=0.03, rely=0.43, height=28, width=205)
         self.Label1.configure(anchor=W)
         self.Label1.configure(text='''Destination File''')
         self.Label1.configure(width=205)
 
         self.Label2 = Label(top)
-        self.Label2.place(relx=0.03, rely=0.06, height=28, width=205)
+        self.Label2.place(relx=0.03, rely=0.3, height=28, width=205)
         self.Label2.configure(activebackground="#f9f9f9")
         self.Label2.configure(anchor=W)
         self.Label2.configure(text='''Source File''')
 
         self.btnSrcFile = Button(top)
-        self.btnSrcFile.place(relx=0.73, rely=0.14, height=36, width=133)
+        self.btnSrcFile.place(relx=0.73, rely=0.35, height=36, width=133)
         self.btnSrcFile.configure(activebackground="#d9d9d9")
         self.btnSrcFile.configure(text='''Browse''')
         self.btnSrcFile.configure(width=133)
         self.btnSrcFile.configure(command=self.browseSrcFile)
 
         self.btnDestFile = Button(top)
-        self.btnDestFile.place(relx=0.73, rely=0.39, height=36, width=133)
+        self.btnDestFile.place(relx=0.73, rely=0.48, height=36, width=133)
         self.btnDestFile.configure(activebackground="#d9d9d9")
         self.btnDestFile.configure(text='''Browse''')
         self.btnDestFile.configure(command=self.browseDestFile)
 
         self.btnConvXML = Button(top)
-        self.btnConvXML.place(relx=0.19, rely=0.58, height=66, width=353)
+        self.btnConvXML.place(relx=0.03, rely=0.6, height=66, width=538)
         self.btnConvXML.configure(activebackground="#d9d9d9")
         self.btnConvXML.configure(text='''ConvertXML''')
-        self.btnConvXML.configure(width=353)
+        self.btnConvXML.configure(width=534)
         self.btnConvXML.configure(command=self.convertXMLButtonAction)
 
         self.statusMsg = tkst.ScrolledText(top)
-        self.statusMsg.place(relx=0.19, rely=0.76, relheight=0.08, relwidth=0.61, height=50)
+        self.statusMsg.place(relx=0.03, rely=0.73, relheight=0.23, relwidth=0.93)
         self.statusMsg.insert(END, '''Status message of conversion will appear here''')
-        self.statusMsg.configure(width=500)
+        self.statusMsg.configure(width=534)
         self.statusMsg.configure(state=DISABLED)
 
     def browseSrcFile(self):
         filename = tkfd.askopenfilename(initialdir=self.MusecoreScoresFolder, filetypes=(("XML Files", "*.xml"),
                                                                                          ("All Files", "*.*")))
-        self.entSrcFile.delete(0, END)
-        self.entSrcFile.insert(0, filename)
+        self.endSrcFile.delete(0, END)
+        self.endSrcFile.insert(0, filename)
 
     def browseDestFile(self):
         filename = tkfd.asksaveasfilename(initialdir=self.PlaneShiftScoresFolder, filetypes=(("XML Files", "*.xml"),
                                                                                              ("All Files", "*.*")))
-        self.entDestFile.delete(0, END)
-        self.entDestFile.insert(0, filename)
+        self.endDestFile.delete(0, END)
+        self.endDestFile.insert(0, filename)
 
     def convertXMLButtonAction(self):
-        srcFilename = self.entSrcFile.get()
-        destFilename = self.entDestFile.get()
+        srcFilename = self.endSrcFile.get()
+        destFilename = self.endDestFile.get()
 
         try:
-            convXML = self.converter.convertXML(srcFilename)
+            convXML = self._converter.convertXML(srcFilename)
         except RuntimeError as e:
             self.populateStatusMsgBox("Error occured while processing the input file. Exited with '{}'".format(e))
         # used for debug purposes
@@ -167,7 +237,6 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
                 self.populateStatusMsgBox("File written out successfully to '{}'".format(destFilename))
         except (OSError, IOError) as e:
             self.populateStatusMsgBox("Your file could not be written to, your exception details are: {}".format(e))
-
 
     def populateStatusMsgBox(self, msg):
         # set the response menssage
