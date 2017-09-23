@@ -30,6 +30,7 @@ except ImportError:
 # local imports
 import ConverterUI_support
 from MusicXMLConverter import MusicXMLConverter
+from ConverterConfigHandler import ConverterConfigHandler
 
 
 def vp_start_gui():
@@ -68,11 +69,11 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         else:
             self._converter = converter
 
-        # define the configfile path
+        # Configuration handling variables
         scriptPath = os.path.dirname(os.path.abspath(__file__))
-        # TODO: Make the confighandler class and pass the config file path obtained here there
         self._confFilePath = os.path.join(os.path.dirname(os.path.normpath(scriptPath)), "conf", "conf.ini")
-        print(self._confFilePath)  # TODO: remove this print -- debug only path seems to work ok
+        self._convConfigHandler = ConverterConfigHandler(self._confFilePath)
+
         # DEFINE SOME USEFUL VARIABLES FOR THE APPLICATION
         '''
         NOTE:
@@ -107,6 +108,7 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         self.lblTitlConfigure.configure(font=font11)
         self.lblTitlConfigure.configure(text='''Configure:''')
 
+        # configure the default source MusicXML directory (MC = Musescore)
         self.lblMCXMLSrcFldr = Label(top)
         self.lblMCXMLSrcFldr.place(relx=0.03, rely=0.04, height=28, width=225)
         self.lblMCXMLSrcFldr.configure(activebackground="#f9f9f9")
@@ -120,6 +122,7 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         self.entMCXMLSrcFldr.configure(background="white")
         self.entMCXMLSrcFldr.configure(font="TkFixedFont")
         self.entMCXMLSrcFldr.configure(selectbackground="#c4c4c4")
+        self.entMCXMLSrcFldr.insert(0, self._convConfigHandler.readMusescoreScoresDefaultFldr())
         READONLY = 'readonly'
         self.entMCXMLSrcFldr.configure(state=READONLY)
 
@@ -127,8 +130,9 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         self.btnMCSrcFldr.place(relx=0.73, rely=0.09, height=36, width=133)
         self.btnMCSrcFldr.configure(activebackground="#d9d9d9")
         self.btnMCSrcFldr.configure(text='''Browse''')
-        self.btnMCSrcFldr.configure(command=self.setDefaultSrcScoreDir)
+        self.btnMCSrcFldr.configure(command=self.setMusescoreScoresDefaultFldr)
 
+        # configure the default PlaneShift MusicXML directory (PS = PlaneShift)
         self.lblPSSheetDestFldr = Label(top)
         self.lblPSSheetDestFldr.place(relx=0.03, rely=0.15, height=28, width=205)
         self.lblPSSheetDestFldr.configure(activebackground="#f9f9f9")
@@ -141,6 +145,7 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         self.entPSSheetDestFldr.configure(background="white")
         self.entPSSheetDestFldr.configure(font="TkFixedFont")
         self.entPSSheetDestFldr.configure(selectbackground="#c4c4c4")
+        self.entPSSheetDestFldr.insert(0, self._convConfigHandler.readPlaneShiftScoresDefaultFldr())
         READONLY = 'readonly'
         self.entPSSheetDestFldr.configure(state=READONLY)
 
@@ -150,7 +155,7 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         self.btnPSDestFldr.configure(text='''Browse''')
         self.btnPSDestFldr.configure(command=self.setDefaultDestScoreDir)
 
-        # converter section controls
+        # CONVERTER section controls
         self.lblTitlConverter = Label(top)
         self.lblTitlConverter.place(relx=0.03, rely=0.26, height=28, width=225)
         self.lblTitlConverter.configure(activebackground="#f9f9f9")
@@ -223,19 +228,21 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         self.endDestFile.insert(0, filename)
 
     # function used to set default musescore dir
-    def setDefaultSrcScoreDir(self):
-        fldrName = tkfd.askdirectory()
+    def setMusescoreScoresDefaultFldr(self):
+        fldrPath = tkfd.askdirectory()
+        self._convConfigHandler.writeMusescoreScoresDefaultFldr(fldrPath)
         self.entMCXMLSrcFldr.configure(state=NORMAL)
         self.entMCXMLSrcFldr.delete(0, END)
-        self.entMCXMLSrcFldr.insert(0, fldrName)
+        self.entMCXMLSrcFldr.insert(0, fldrPath)
         self.entMCXMLSrcFldr.configure(state="readonly")
 
     # function used to set default musescore dir
     def setDefaultDestScoreDir(self):
-        fldrName = tkfd.askdirectory()
+        fldrPath = tkfd.askdirectory()
+        self._convConfigHandler.writePlaneShiftScoresDefaultFldr(fldrPath)
         self.entPSSheetDestFldr.configure(state=NORMAL)
         self.entPSSheetDestFldr.delete(0, END)
-        self.entPSSheetDestFldr.insert(0, fldrName)
+        self.entPSSheetDestFldr.insert(0, fldrPath)
         self.entPSSheetDestFldr.configure(state="readonly")
 
     def convertXMLButtonAction(self):
