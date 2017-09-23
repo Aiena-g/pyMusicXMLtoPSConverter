@@ -68,11 +68,11 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         else:
             self._converter = converter
 
-        #define the configfile path
+        # define the configfile path
         scriptPath = os.path.dirname(os.path.abspath(__file__))
-        #TODO: Make the confighandler class and pass the config file path obtained here there
-        self._confFilePath = os.path.join(os.path.dirname(os.path.normpath(scriptPath)),"conf","conf.ini")
-        print (self._confFilePath) # TODO: remove this print -- debug only path seems to work ok
+        # TODO: Make the confighandler class and pass the config file path obtained here there
+        self._confFilePath = os.path.join(os.path.dirname(os.path.normpath(scriptPath)), "conf", "conf.ini")
+        print(self._confFilePath)  # TODO: remove this print -- debug only path seems to work ok
         # DEFINE SOME USEFUL VARIABLES FOR THE APPLICATION
         '''
         NOTE:
@@ -107,30 +107,6 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         self.lblTitlConfigure.configure(font=font11)
         self.lblTitlConfigure.configure(text='''Configure:''')
 
-        self.MCXMLSrcFldr = Entry(top)
-        self.MCXMLSrcFldr.place(relx=0.03, rely=0.09, relheight=0.06
-                                , relwidth=0.67)
-        self.MCXMLSrcFldr.configure(background="white")
-        self.MCXMLSrcFldr.configure(font="TkFixedFont")
-        self.MCXMLSrcFldr.configure(selectbackground="#c4c4c4")
-        READONLY = 'readonly'
-        self.MCXMLSrcFldr.configure(state=READONLY)
-
-        self.lblPSSheetDestFldr = Label(top)
-        self.lblPSSheetDestFldr.place(relx=0.03, rely=0.15, height=28, width=205)
-        self.lblPSSheetDestFldr.configure(activebackground="#f9f9f9")
-        self.lblPSSheetDestFldr.configure(anchor=W)
-        self.lblPSSheetDestFldr.configure(text='''Planeshift scores destination folder''')
-
-        self.PSSheetDestFldr = Entry(top)
-        self.PSSheetDestFldr.place(relx=0.03, rely=0.2, relheight=0.06
-                                   , relwidth=0.67)
-        self.PSSheetDestFldr.configure(background="white")
-        self.PSSheetDestFldr.configure(font="TkFixedFont")
-        self.PSSheetDestFldr.configure(selectbackground="#c4c4c4")
-        READONLY = 'readonly'
-        self.PSSheetDestFldr.configure(state=READONLY)
-
         self.lblMCXMLSrcFldr = Label(top)
         self.lblMCXMLSrcFldr.place(relx=0.03, rely=0.04, height=28, width=225)
         self.lblMCXMLSrcFldr.configure(activebackground="#f9f9f9")
@@ -138,15 +114,41 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         self.lblMCXMLSrcFldr.configure(text='''Musescore MusicXML export directory''')
         self.lblMCXMLSrcFldr.configure(width=225)
 
-        self.btnPSDestFldr = Button(top)
-        self.btnPSDestFldr.place(relx=0.73, rely=0.2, height=36, width=133)
-        self.btnPSDestFldr.configure(activebackground="#d9d9d9")
-        self.btnPSDestFldr.configure(text='''Browse''')
+        self.entMCXMLSrcFldr = Entry(top)
+        self.entMCXMLSrcFldr.place(relx=0.03, rely=0.09, relheight=0.06
+                                   , relwidth=0.67)
+        self.entMCXMLSrcFldr.configure(background="white")
+        self.entMCXMLSrcFldr.configure(font="TkFixedFont")
+        self.entMCXMLSrcFldr.configure(selectbackground="#c4c4c4")
+        READONLY = 'readonly'
+        self.entMCXMLSrcFldr.configure(state=READONLY)
 
         self.btnMCSrcFldr = Button(top)
         self.btnMCSrcFldr.place(relx=0.73, rely=0.09, height=36, width=133)
         self.btnMCSrcFldr.configure(activebackground="#d9d9d9")
         self.btnMCSrcFldr.configure(text='''Browse''')
+        self.btnMCSrcFldr.configure(command=self.setDefaultSrcScoreDir)
+
+        self.lblPSSheetDestFldr = Label(top)
+        self.lblPSSheetDestFldr.place(relx=0.03, rely=0.15, height=28, width=205)
+        self.lblPSSheetDestFldr.configure(activebackground="#f9f9f9")
+        self.lblPSSheetDestFldr.configure(anchor=W)
+        self.lblPSSheetDestFldr.configure(text='''Planeshift scores destination folder''')
+
+        self.entPSSheetDestFldr = Entry(top)
+        self.entPSSheetDestFldr.place(relx=0.03, rely=0.2, relheight=0.06
+                                      , relwidth=0.67)
+        self.entPSSheetDestFldr.configure(background="white")
+        self.entPSSheetDestFldr.configure(font="TkFixedFont")
+        self.entPSSheetDestFldr.configure(selectbackground="#c4c4c4")
+        READONLY = 'readonly'
+        self.entPSSheetDestFldr.configure(state=READONLY)
+
+        self.btnPSDestFldr = Button(top)
+        self.btnPSDestFldr.place(relx=0.73, rely=0.2, height=36, width=133)
+        self.btnPSDestFldr.configure(activebackground="#d9d9d9")
+        self.btnPSDestFldr.configure(text='''Browse''')
+        self.btnPSDestFldr.configure(command=self.setDefaultDestScoreDir)
 
         # converter section controls
         self.lblTitlConverter = Label(top)
@@ -219,6 +221,22 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
                                                                                              ("All Files", "*.*")))
         self.endDestFile.delete(0, END)
         self.endDestFile.insert(0, filename)
+
+    # function used to set default musescore dir
+    def setDefaultSrcScoreDir(self):
+        fldrName = tkfd.askdirectory()
+        self.entMCXMLSrcFldr.configure(state=NORMAL)
+        self.entMCXMLSrcFldr.delete(0, END)
+        self.entMCXMLSrcFldr.insert(0, fldrName)
+        self.entMCXMLSrcFldr.configure(state="readonly")
+
+    # function used to set default musescore dir
+    def setDefaultDestScoreDir(self):
+        fldrName = tkfd.askdirectory()
+        self.entPSSheetDestFldr.configure(state=NORMAL)
+        self.entPSSheetDestFldr.delete(0, END)
+        self.entPSSheetDestFldr.insert(0, fldrName)
+        self.entPSSheetDestFldr.configure(state="readonly")
 
     def convertXMLButtonAction(self):
         srcFilename = self.endSrcFile.get()
