@@ -79,11 +79,6 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         NOTE:
         Please use absolute paths for these No "./path/foo/" OR "~/path/foo/" or just "foo"
         '''
-        # the directory where you keep your scores in XML exported from musescore
-        self.MusecoreScoresFolder = "/home/aiena/Documents/MuseScore2/Scores/"
-        # the directory where you waqnt to export the PS converted XML scores (usually .PlaneShift)
-        self.PlaneShiftScoresFolder = "/home/aiena/.PlaneShift/musicalsheets/"
-
         '''This class configures and populates the toplevel window.
            top is the toplevel containing window.'''
         _bgcolor = '#d9d9d9'  # X11 color: 'gray85'
@@ -216,13 +211,13 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         self.statusMsg.configure(state=DISABLED)
 
     def browseSrcFile(self):
-        filename = tkfd.askopenfilename(initialdir=self.MusecoreScoresFolder, filetypes=(("XML Files", "*.xml"),
+        filename = tkfd.askopenfilename(initialdir=self._convConfigHandler.readMusescoreScoresDefaultFldr(), filetypes=(("XML Files", "*.xml"),
                                                                                          ("All Files", "*.*")))
         self.endSrcFile.delete(0, END)
         self.endSrcFile.insert(0, filename)
 
     def browseDestFile(self):
-        filename = tkfd.asksaveasfilename(initialdir=self.PlaneShiftScoresFolder, filetypes=(("XML Files", "*.xml"),
+        filename = tkfd.asksaveasfilename(initialdir=self._convConfigHandler.readPlaneShiftScoresDefaultFldr(), filetypes=(("XML Files", "*.xml"),
                                                                                              ("All Files", "*.*")))
         self.endDestFile.delete(0, END)
         self.endDestFile.insert(0, filename)
