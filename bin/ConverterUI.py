@@ -71,7 +71,11 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
 
         # Configuration handling variables
         scriptPath = os.path.dirname(os.path.abspath(__file__))
-        self._confFilePath = os.path.join(os.path.dirname(os.path.normpath(scriptPath)), "conf", "conf.ini")
+        confFileFldr = os.path.join(os.path.dirname(os.path.normpath(scriptPath)), "conf")
+        if not os.path.exists(confFileFldr):
+            os.makedirs(confFileFldr)
+
+        self._confFilePath = os.path.join(confFileFldr, "conf.ini")
         self._convConfigHandler = ConverterConfigHandler(self._confFilePath)
 
         # DEFINE SOME USEFUL VARIABLES FOR THE APPLICATION
@@ -211,14 +215,16 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
         self.statusMsg.configure(state=DISABLED)
 
     def browseSrcFile(self):
-        filename = tkfd.askopenfilename(initialdir=self._convConfigHandler.readMusescoreScoresDefaultFldr(), filetypes=(("XML Files", "*.xml"),
-                                                                                         ("All Files", "*.*")))
+        filename = tkfd.askopenfilename(initialdir=self._convConfigHandler.readMusescoreScoresDefaultFldr(),
+                                        filetypes=(("XML Files", "*.xml"),
+                                                   ("All Files", "*.*")))
         self.endSrcFile.delete(0, END)
         self.endSrcFile.insert(0, filename)
 
     def browseDestFile(self):
-        filename = tkfd.asksaveasfilename(initialdir=self._convConfigHandler.readPlaneShiftScoresDefaultFldr(), filetypes=(("XML Files", "*.xml"),
-                                                                                             ("All Files", "*.*")))
+        filename = tkfd.asksaveasfilename(initialdir=self._convConfigHandler.readPlaneShiftScoresDefaultFldr(),
+                                          filetypes=(("XML Files", "*.xml"),
+                                                     ("All Files", "*.*")))
         self.endDestFile.delete(0, END)
         self.endDestFile.insert(0, filename)
 
