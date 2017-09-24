@@ -4,8 +4,8 @@ import xml.etree.ElementTree as ET
 class MusicXMLConverter:
     def __init__(self, mode="debug"):
         self._mode = mode
-        #define some global properties used in other places for MusicXML
-        self._multiplier = None # gets a value when processing the first measure
+        # define some global properties used in other places for MusicXML
+        self._multiplier = None  # gets a value when processing the first measure
 
         if (self._mode not in ["debug", "production"]):
             raise ValueError(
@@ -64,8 +64,8 @@ class MusicXMLConverter:
                     # handle the "alter" child tag separately even if the alter value is 0 include it otherwise
                     #   include the original scores alter value
                     inPitchAlter = inPitch.find("alter")
-                    if(inPitchAlter is not None):
-                        #use sources alter elem
+                    if (inPitchAlter is not None):
+                        # use sources alter elem
                         outPitchAlter = ET.Element("alter")
                         outPitchAlter.text = inPitchAlter.text
                         outPitch.append(outPitchAlter)
@@ -74,7 +74,6 @@ class MusicXMLConverter:
                         outPitchAlter = ET.Element("alter")
                         outPitchAlter.text = "0"
                         outPitch.append(outPitchAlter)
-
 
                     outNote.append(outPitch)
 
@@ -186,7 +185,7 @@ class MusicXMLConverter:
                 outMeasureDivisions.text = str(4)
                 # compute Multiplier here (Multiplier used to multiply MusicXML note duration
                 #   i.e. "output note duration" = "input note duration" * "multiplier"
-                self._multiplier = 4/int(inMeasureDivisions.text)
+                self._multiplier = 4 / int(inMeasureDivisions.text)
 
             # process key -- fifths
             inMeasureKey = inMeasureAttributes.find("key")
@@ -226,15 +225,22 @@ class MusicXMLConverter:
             outMeasureTime.append(outMeasureBeatType)
 
             # process sound tempo
-            inMeasureSound = inMeasureElem.find("sound")
-            if (inMeasureSound is not None):
-                inMeasureSoundAttribs = inMeasureSound.attrib
-                if ("tempo" in inMeasureSoundAttribs):
-                    outMeasureSound.set("tempo", inMeasureSoundAttribs[tempo])
+            inMeasureDirection = inMeasureElem.find("direction")
+            if (inMeasureDirection is not None):
+                inMeasureSound = inMeasureDirection.find("sound")
+                if (inMeasureSound is not None):
+                    inMeasureSoundAttribs = inMeasureSound.attrib
+
+                    if (True == ("tempo" in inMeasureSoundAttribs)):
+                        outMeasureSound.set("tempo", inMeasureSoundAttribs["tempo"])
+                        self.debugPrint("tempo found")
+                    else:
+                        outMeasureSound.set("tempo", "90")
                 else:
+                    self.debugPrint("tempo not found")
                     outMeasureSound.set("tempo", "90")
             else:
-                outMeasureSound.set("tempo", "90")
+                self.debugPrint("direction not found")
 
             # creating the nesting hierarchy
             # divisions
@@ -368,5 +374,6 @@ if __name__ == '__main__':
     voltaTestFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_volta_test.xml"
     voltaWithTimesTestFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_repeat_test_3r.xml"
     emptyScoreFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_Empty_bars_test_more_variety.xml"
-    convXML = converter.convertXML(voltaTestFile)
+    six_eight_Score_File = "/home/aiena/Documents/MuseScore2/Scores/Test Suite/test_time_sig_6_8.xml"
+    convXML = converter.convertXML(six_eight_Score_File)
     print(convXML)
