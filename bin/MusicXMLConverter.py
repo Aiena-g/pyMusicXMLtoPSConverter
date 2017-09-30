@@ -15,11 +15,11 @@ class MusicXMLConverter:
         if (self._mode == "debug"):
             print(msg)
 
-    def measureIsEmpty(self, inMeasureElem):
-        """ Check if a measure is empty. A measure is empty if all the notes in it are of type "rest" """
+    def measureIsSilent(self, inMeasureElem):
+        """ Check if a measure has no audible notes. A measure is silent if all the notes in it are of type "rest" """
         inMeasureNotes = inMeasureElem.findall("note")
         if (len(inMeasureNotes) > 0):
-            restCount = 0;  # initialise rest count
+            restCount = 0  # initialise rest count
             for inMeasureNote in inMeasureNotes:
                 noteTypeRest = inMeasureNote.find("rest")
                 if (noteTypeRest is not None):
@@ -29,6 +29,18 @@ class MusicXMLConverter:
                 return True
             else:
                 return False
+
+    def measureIsEmpty(self, inMeasureElem):
+        """ Check if a measure has notes (Not even rests). A measure is empty and invalid if it has no notes at all """
+        inMeasureNotes = inMeasureElem.findall("note")
+        if (inMeasureNotes is None):
+            self.debugPrint("Measure found empty (invalid XML)")
+            return True
+        elif (len(inMeasureNotes)  == 0):
+            self.debugPrint("Found a truly empty measure - invalid musicXML")
+            return True
+        else:
+            return False
 
     def processNotes(self, inMeasureElem):
         """ Process notes in a element. Returns a list with all the notes in the measure converted as per PS format """
@@ -375,5 +387,6 @@ if __name__ == '__main__':
     voltaWithTimesTestFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_repeat_test_3r.xml"
     emptyScoreFile = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MC_Empty_bars_test_more_variety.xml"
     six_eight_Score_File = "/home/aiena/Documents/MuseScore2/Scores/Test Suite/test_time_sig_6_8.xml"
-    convXML = converter.convertXML(six_eight_Score_File)
+    six_eight_Score_Broken_Empty_Measure_File = "/mnt/200GBlinuxPart/Musescore/PSConverterPurePy/samplefiles/MCtest_time_sig_6_8_empty_meas.xml"
+    convXML = converter.convertXML(six_eight_Score_Broken_Empty_Measure_File)
     print(convXML)
