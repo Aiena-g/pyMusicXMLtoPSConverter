@@ -32,12 +32,13 @@ class MusicXMLConverter:
 
     def measureIsEmpty(self, inMeasureElem):
         """ Check if a measure has notes (Not even rests). A measure is empty and invalid if it has no notes at all """
+        emptyMeasureMsg = "Measure found empty (invalid XML)"
         inMeasureNotes = inMeasureElem.findall("note")
         if (inMeasureNotes is None):
-            self.debugPrint("Measure found empty (invalid XML)")
+            self.debugPrint(emptyMeasureMsg)
             return True
         elif (len(inMeasureNotes)  == 0):
-            self.debugPrint("Found a truly empty measure - invalid musicXML")
+            self.debugPrint(emptyMeasureMsg)
             return True
         else:
             return False
