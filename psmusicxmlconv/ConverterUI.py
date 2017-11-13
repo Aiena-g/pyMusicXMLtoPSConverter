@@ -71,7 +71,7 @@ class Musescore_Music_XML_to_PlaneShift_XML_Converter:
 
         # Configuration handling variables
         scriptPath = os.path.dirname(os.path.abspath(__file__))
-        confFileFldr = os.path.join(os.path.dirname(os.path.normpath(scriptPath)), "conf")
+        confFileFldr = os.path.join(os.path.dirname(os.path.normpath(scriptPath)), "psmusicxmlconv-conf")
         if not os.path.exists(confFileFldr):
             os.makedirs(confFileFldr)
 
